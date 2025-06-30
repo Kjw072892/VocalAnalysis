@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tkinter as tk
 from tkinter import Tk, filedialog
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 """
 Output the collected data for easy use
@@ -11,26 +13,28 @@ Output the collected data for easy use
 The first list added will be designated as F0, the second F1 and so on
 list[float] [f0, f1, f2, f3, f4]
 """
-def output(*args: list[float]):
+def output(*args: list[float], list_times:list[list[float]]):
     window = tk.Tk()
-    window.geometry("610x550")
+    window.geometry("620x550")
     window.title("Vocal Analysis Report")
 
-    canvas = tk.Canvas(window, borderwidth=0)
+    canvas = tk.Canvas(window,width=620, height=550)
     scrollbar = tk.Scrollbar(window, orient="vertical", command=canvas.yview)
+    canvas.configure(yscrollcommand=scrollbar.set)
+
+    scrollbar.pack(side="right", fill="y")
+    canvas.pack(side="left", fill="both", expand=True)
+
     scroll_frame = tk.Frame(canvas)
 
     scroll_frame.bind(
         "<Configure>",
         lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-
+    canvas.config(width=620,height=550)
     canvas.create_window((0,0), window=scroll_frame, anchor="nw")
-    canvas.configure(yscrollcommand=scrollbar.set)
-
-    canvas.pack(side ="left", fill="both", expand=True)
-    scrollbar.pack(side="right", fill="y")
 
     formant_tuple = []
+
     pitch_explain = """
 * Cis Women pitch range: [165 - 255] Hz -> Averaging ~210 Hz
     
@@ -128,18 +132,18 @@ def output(*args: list[float]):
         highest_text += f"F{i}: {highest[i]: 0.2f} Hz\n"
 
     result_text += f"""
-Your lowest Pitch is: {lowest[0]:0.0f} Hz; Your highest Pitch is {highest[0]:0.0f} Hz\n
+Your lowest Pitch is: [{lowest[0]:0.0f} Hz]; Your highest Pitch is [{highest[0]:0.0f} Hz]\n
 """
     is_within_cis_women_pitch_range = 165 < get_freq_average(formant_tuple[0]) < 400
     is_within_cis_men_pitch_range = 92 <=  get_freq_average(formant_tuple[0]) < 145
     is_androgynous_pitch = 145 <= get_freq_average(formant_tuple[0]) <= 165
 
     if is_within_cis_women_pitch_range:
-        result_text += "Your pitch-average is within cis women's average pitch-range\n"
+        result_text += "    - Your pitch-average is within cis women's average pitch-range\n"
     elif is_within_cis_men_pitch_range:
-        result_text += "Your pitch-average is within cis men's average pitch range\n"
+        result_text += "    - Your pitch-average is within cis men's average pitch range\n"
     elif is_androgynous_pitch:
-        result_text += "Your pitch-average lies within the androgynous zone. \n"
+        result_text += "    - Your pitch-average lies within the androgynous zone. \n"
 
 
     # TODO: Display results for the formant data
@@ -182,15 +186,44 @@ Your lowest Pitch is: {lowest[0]:0.0f} Hz; Your highest Pitch is {highest[0]:0.0
                                                                                                            20))
     label_result_.pack(padx=0, pady=5, anchor="w")
 
+    # Embedding the scatter plot
+    fig = Figure(figsize=(6, 12), dpi=100)
+    ax = fig.add_subplot(111)
+    max_freqs = max(max(f0_vals_arr), max(f1_vals_arr), max(f2_vals_arr), max(f3_vals_arr), max(f4_vals_arr))
+
+    ax.plot(list_times[0], f0_vals_arr, label='Pitch', color='black')
+    ax.scatter(list_times[1], f1_vals_arr, label='F1')
+    ax.scatter(list_times[2], f2_vals_arr, label='F2')
+    ax.scatter(list_times[3], f3_vals_arr, label='F3')
+    ax.scatter(list_times[4], f4_vals_arr, label='F4')
+
+    ax.set_xlabel("Time (sec)")
+    ax.set_ylabel("Frequency (Hz)")
+    ax.set_yticks(list(np.arange(0, 1001, 100)) + list(np.arange(1100, max_freqs, 200)))
+    ax.set_title("Formant Tracks Over Time")
+    ax.legend()
+    ax.grid(True)
+
+    canvas_plot = FigureCanvasTkAgg(fig, master=scroll_frame)
+    canvas_plot.draw()
+    canvas_plot.get_tk_widget().pack(padx=10, pady=10, anchor="e")
+    canvas.pack(side="left", fill="both", expand=False)
+
     label_result1 = tk.Label(scroll_frame, text=result_text, justify="left", anchor="w", font=("Courier", 10))
     label_result1.pack(padx=0, pady=5, anchor="w")
+
 
 
     def on_close():
         window.destroy()
 
     window.protocol("WM_DELETE_WINDOW", on_close)
-    window.mainloop()
+
+    window.resizable(None, None)
+    try:
+        window.mainloop()
+    except KeyboardInterrupt:
+        print("Program Closed")
 
 
 
@@ -313,7 +346,7 @@ def get_high(freq_data: list[float], formant_high: str):
 root = Tk()
 root.withdraw()
 
-file_path = filedialog.askopenfilename(title="Select an audio file")
+file_path = filedialog.askopenfilename(title="Select an Audio File")
 
 if file_path:
     sound = parselmouth.Sound(file_path)
@@ -359,8 +392,6 @@ if file_path:
     times_f3, f3_vals_arr = filter_frequency_synchronized(times, f3_vals_arr)
     times_f4, f4_vals_arr = filter_frequency_synchronized(times, f4_vals_arr)
 
-    print(f1_vals_arr)
-
     f0_average = get_freq_average(f0_vals_arr)
     f1_average = get_freq_average(f1_vals_arr)
     f2_average = get_freq_average(f2_vals_arr)
@@ -374,31 +405,18 @@ if file_path:
     f3_low, f3_high = get_low(f3_vals_arr, "f3".casefold()), get_high(f3_vals_arr, "f3".casefold())
     f4_low, f4_high = get_low(f4_vals_arr, "f4".casefold()), get_high(f4_vals_arr, "f4".casefold())
 
-    #Plotting the frequency points
-    plt.figure(figsize=(12, 8), dpi=150)
-    plt.plot(times_f0, f0_vals_arr, label='Pitch', color='Black')
-    plt.scatter(times_f1, f1_vals_arr, label='F1')
-    plt.scatter(times_f2, f2_vals_arr, label='F2')
-    plt.scatter(times_f3, f3_vals_arr, label='F3')
-    plt.scatter(times_f4, f4_vals_arr, label='F4')
-
-    max_freq = max(max(f0_vals_arr), max(f1_vals_arr), max(f2_vals_arr), max(f3_vals_arr), max(f4_vals_arr))
 
 
-    plt.xlabel("Time (sec)")
-    plt.ylabel("Frequency (Hz)")
-
-    plt.yticks(list(np.arange(0, 1001, 100)) + list(np.arange(1100, max_freq, 200)))
-    plt.title("Formant Tracks Over Time")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show(block=True)
-else:
-    print("no file selected")
 
 def main():
-    output(f0_vals_arr, f1_vals_arr, f2_vals_arr, f3_vals_arr, f4_vals_arr)
+    try:
+        output(f0_vals_arr, f1_vals_arr, f2_vals_arr, f3_vals_arr, f4_vals_arr,
+               list_times=[times_f0, times_f1, times_f2, times_f3, times_f4])
+
+
+
+    except NameError:
+        print("No File Selected")
 
 if __name__ == "__main__":
     main()
