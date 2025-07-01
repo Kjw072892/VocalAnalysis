@@ -59,7 +59,7 @@ def output(*args: list[float], list_times:list[list[float]]):
 
 * Tongue Height (Jaw Opening):
 
-    ** F1: Cis Women [300 - 900] Hz | Cis Men [250 - 800] Hz 
+    ** F1: Cis Women [270 - 900] Hz | Cis Men [350 - 1000] Hz 
     
     - High tongue (closed mouth) -> Low F1
         + Vowels like /i/("ee" as in beet), /u/("00" in boot)
@@ -79,7 +79,7 @@ def output(*args: list[float], list_times:list[list[float]]):
     - Tongue back -> Low F2
         + Vowels like /u/ ("oo"),/o/ ("oh", /a/("aw")
     
-    - Directly related to tongue frontness
+    - Directly related to tongue front-ness
 
 * Lip Shape & Resonance Characteristics:
 
@@ -148,41 +148,41 @@ Your lowest Pitch is: [{lowest[0]:0.0f} Hz]; Your highest Pitch is [{highest[0]:
 
     # TODO: Display results for the formant data
 
-    label_header = tk.Label(scroll_frame, text="Vocal Analysis Tool-Kit", justify="left", anchor="w",font=("Courier",
+    label_header = tk.Label(scroll_frame, text="Vocal Analysis Tool-Kit", justify="left", anchor="w",font=("Ariel",
                                                                                                            20))
     label_header.pack(padx=0, pady=5, anchor="w")
 
-    label_pitch_explain = tk.Label(scroll_frame, text=pitch_explain, justify="left", anchor="w", font=("Courier", 10))
+    label_pitch_explain = tk.Label(scroll_frame, text=pitch_explain, justify="left", anchor="w", font=("Ariel", 10))
     label_pitch_explain.pack(padx=0, pady=5, anchor="w")
 
-    label_average = tk.Label(scroll_frame, text="Average (yours): ", justify="left", anchor="w", font=("Courier", 20))
+    label_average = tk.Label(scroll_frame, text="Average (yours): ", justify="left", anchor="w", font=("Ariel", 20))
     label_average.pack(padx = 0, pady = 5, anchor="w")
 
-    label_average1 = tk.Label(scroll_frame, text=average_text, justify="left", anchor="w", font=("Courier", 10))
+    label_average1 = tk.Label(scroll_frame, text=average_text, justify="left", anchor="w", font=("Ariel", 10))
     label_average1.pack(padx=0, pady=20, anchor="w")
 
     label_lowest = tk.Label(scroll_frame, text="Lowest Frequencies (yours):", justify="left", anchor="w",
-                            font=("Courier", 20))
+                            font=("Ariel", 20))
     label_lowest.pack(padx=0, pady=5, anchor="w")
 
-    label_lowest1 = tk.Label(scroll_frame, text=lowest_text, justify="left", anchor="w", font=("Courier", 10))
+    label_lowest1 = tk.Label(scroll_frame, text=lowest_text, justify="left", anchor="w", font=("Ariel", 10))
     label_lowest1.pack(padx=0, pady=20, anchor="w")
 
     label_highest = tk.Label(scroll_frame, text="Highest Frequencies (yours): ", justify="left", anchor="w",
-                             font=("Courier", 20))
+                             font=("Ariel", 20))
     label_highest.pack(padx=0, pady=5, anchor="w")
 
-    label_highest1 = tk.Label(scroll_frame, text=highest_text, justify="left", anchor="w", font=("Courier", 10))
+    label_highest1 = tk.Label(scroll_frame, text=highest_text, justify="left", anchor="w", font=("Ariel", 10))
     label_highest1.pack(padx=0, pady=20, anchor="w")
 
     label_result_tag = tk.Label(scroll_frame, text = "Formant Information:", justify="left",
-     anchor="w", font=("Courier", 20))
+     anchor="w", font=("Ariel", 20))
     label_result_tag.pack(padx=0, pady=5, anchor="w")
 
-    label_result = tk.Label(scroll_frame, text=result_explain, justify="left", wraplength=600, anchor="w",font=("Courier", 10))
+    label_result = tk.Label(scroll_frame, text=result_explain, justify="left", wraplength=600, anchor="w",font=("Ariel", 10))
     label_result.pack(padx=0, pady=5, anchor="w")
 
-    label_result_ = tk.Label(scroll_frame, text="Formant/Pitch Result:", justify="left", anchor="w", font=("Courier",
+    label_result_ = tk.Label(scroll_frame, text="Formant/Pitch Result:", justify="left", anchor="w", font=("Ariel",
                                                                                                            20))
     label_result_.pack(padx=0, pady=5, anchor="w")
 
@@ -209,7 +209,7 @@ Your lowest Pitch is: [{lowest[0]:0.0f} Hz]; Your highest Pitch is [{highest[0]:
     canvas_plot.get_tk_widget().pack(padx=10, pady=10, anchor="e")
     canvas.pack(side="left", fill="both", expand=False)
 
-    label_result1 = tk.Label(scroll_frame, text=result_text, justify="left", anchor="w", font=("Courier", 10))
+    label_result1 = tk.Label(scroll_frame, text=result_text, justify="left", anchor="w", font=("Ariel", 10))
     label_result1.pack(padx=0, pady=5, anchor="w")
 
 
@@ -221,7 +221,7 @@ Your lowest Pitch is: [{lowest[0]:0.0f} Hz]; Your highest Pitch is [{highest[0]:
 
     window.resizable(None, None)
     try:
-        window.mainloop()
+         window.mainloop()
     except KeyboardInterrupt:
         print("Program Closed")
 
@@ -388,11 +388,40 @@ def get_high(freq_data: list[float], formant_high: str):
 
     return high
 
+file_path = None  # Global so it can be used by the rest of your script
+root = tk.Tk()
+root.title("Select Audio File")
+root.geometry("400x150")
+root.resizable(False, False)
 
-root = Tk()
-root.withdraw()
+def exit_app():
+    root.destroy()
 
-file_path = filedialog.askopenfilename(title="Select an Audio File")
+def get_file_path():
+    global file_path
+    file_path = filedialog.askopenfilename(title="Select an Audio File")
+    if file_path:
+        root.destroy()  # Close the window to continue the main script
+    else:
+        label.config(text="Please select a valid file!")
+
+label = tk.Label(root, text="Please Select Your Audio File.",font=("Ariel", 11))
+label.pack(side="top", anchor="center", pady=(30,30))
+
+button_frame = tk.Frame(root)
+button_frame.pack(side="bottom", pady=(10,30))
+
+btn_width = 12
+
+
+button = tk.Button(button_frame, text="Choose File", width=btn_width,command=get_file_path)
+button.pack(side="left", padx= 10)
+
+exit_button = tk.Button(button_frame, text="Exit", width=btn_width ,command=exit_app)
+exit_button.pack(side="left", padx=10)
+
+root.mainloop()
+
 
 if file_path:
     sound = parselmouth.Sound(file_path)
