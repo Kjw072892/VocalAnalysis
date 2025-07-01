@@ -1,6 +1,5 @@
 import parselmouth
 import math
-import matplotlib.pyplot as plt
 import numpy as np
 import tkinter as tk
 from tkinter import Tk, filedialog
