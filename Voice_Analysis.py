@@ -6,6 +6,7 @@ from tkinter import Tk, filedialog
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
+
 """
 Output the collected data for easy use
 
@@ -13,9 +14,12 @@ The first list added will be designated as F0, the second F1 and so on
 list[float] [f0, f1, f2, f3, f4]
 """
 def output(*args: list[float], list_times:list[list[float]]):
+
     window = tk.Tk()
-    window.geometry("620x550")
+    window.geometry("650x1050")
     window.title("Vocal Analysis Report")
+    window.resizable(False, False)
+
 
     canvas = tk.Canvas(window,width=620, height=550)
     scrollbar = tk.Scrollbar(window, orient="vertical", command=canvas.yview)
@@ -147,8 +151,7 @@ Your lowest Pitch is: [{lowest[0]:0.0f} Hz]; Your highest Pitch is [{highest[0]:
 
     # TODO: Display results for the formant data
 
-    label_header = tk.Label(scroll_frame, text="Vocal Analysis Tool-Kit", justify="left", anchor="w",font=("Ariel",
-                                                                                                           20))
+    label_header = tk.Label(scroll_frame, text="Vocal Analysis Tool-Kit", justify="left", anchor="w",font=("Ariel",20))
     label_header.pack(padx=0, pady=5, anchor="w")
 
     label_pitch_explain = tk.Label(scroll_frame, text=pitch_explain, justify="left", anchor="w", font=("Ariel", 10))
@@ -167,8 +170,7 @@ Your lowest Pitch is: [{lowest[0]:0.0f} Hz]; Your highest Pitch is [{highest[0]:
     label_lowest1 = tk.Label(scroll_frame, text=lowest_text, justify="left", anchor="w", font=("Ariel", 10))
     label_lowest1.pack(padx=0, pady=20, anchor="w")
 
-    label_highest = tk.Label(scroll_frame, text="Highest Frequencies (yours): ", justify="left", anchor="w",
-                             font=("Ariel", 20))
+    label_highest = tk.Label(scroll_frame, text="Highest Frequencies (yours): ", justify="left", anchor="w",font=("Ariel", 20))
     label_highest.pack(padx=0, pady=5, anchor="w")
 
     label_highest1 = tk.Label(scroll_frame, text=highest_text, justify="left", anchor="w", font=("Ariel", 10))
@@ -181,8 +183,7 @@ Your lowest Pitch is: [{lowest[0]:0.0f} Hz]; Your highest Pitch is [{highest[0]:
     label_result = tk.Label(scroll_frame, text=result_explain, justify="left", wraplength=600, anchor="w",font=("Ariel", 10))
     label_result.pack(padx=0, pady=5, anchor="w")
 
-    label_result_ = tk.Label(scroll_frame, text="Formant/Pitch Result:", justify="left", anchor="w", font=("Ariel",
-                                                                                                           20))
+    label_result_ = tk.Label(scroll_frame, text="Formant/Pitch Result:", justify="left", anchor="w", font=("Ariel", 20))
     label_result_.pack(padx=0, pady=5, anchor="w")
 
     # Embedding the scatter plot
@@ -207,6 +208,9 @@ Your lowest Pitch is: [{lowest[0]:0.0f} Hz]; Your highest Pitch is [{highest[0]:
     canvas_plot.draw()
     canvas_plot.get_tk_widget().pack(padx=10, pady=10, anchor="e")
     canvas.pack(side="left", fill="both", expand=False)
+
+
+    #TODO: add analysis label and three buttons on the bottom [woman, man, non-binary]
 
     label_result1 = tk.Label(scroll_frame, text=result_text, justify="left", anchor="w", font=("Ariel", 10))
     label_result1.pack(padx=0, pady=5, anchor="w")
