@@ -235,35 +235,81 @@ freqs: A list of the frequencies extracted from the audio sample
 
 returns: tuple with the new synchronized time stamp and a list of the filtered frequencies
 """
-def filter_frequency_synchronized(time_list: list[float], freqs: list[float]) -> tuple[list[float], list[float]]:
+def filter_frequency_synchronized(formant_: str, time_list: list[float], freqs: list[float]) -> tuple[list[float], list[float]]:
+    print("Original freq: ")
+    print(len(freqs))
     count = {}
     for f in freqs:
         if f in count.keys():
             temp = count.pop(f)
             count[f] = temp + 1
+
         else:
             count[f] = 1
 
+    # First Filter
     new_times = []
     new_freqs = []
 
     for time, freq in zip(time_list, freqs):
 
-        if count[freq] >= 1:
+        if count[freq] > 1:
             new_times.append(time)
             new_freqs.append(freq)
 
-    # Remove the first .08 seconds of the audio sample data
-    temp_times = sorted(new_times)
-    temp_freqs = sorted(new_freqs)
 
-    for i, time in enumerate(temp_times):
-        if i < 9:
-            new_times.remove(time)
+    print("Previous frequencies: ")
+    print(len(new_freqs))
 
-    for i, freqs in enumerate(temp_freqs):
-        if i < 9:
-            new_freqs.remove(freqs)
+    # Second Filter low/high pass filter
+
+    prev_freq = 0
+
+    temp_freq = []
+    temp_time = []
+
+    for i, freqs in enumerate(new_freqs):
+
+        if prev_freq == 0:
+            prev_freq = freqs
+            continue
+        if formant_.casefold() == "f0":
+            if 82 < freqs < 335:
+                temp_freq.append(freqs)
+                temp_time.append(time_list[i])
+                prev_freq = freqs
+                continue
+        elif formant_.casefold() == "f1":
+            if 270 < freqs < 860:
+                temp_freq.append(freqs)
+                temp_time.append(time_list[i])
+                prev_freq = freqs
+                continue
+        elif formant_.casefold() == "f2":
+            if 595 < freqs < 2400:
+                temp_freq.append(freqs)
+                temp_time.append(time_list[i])
+                prev_freq = freqs
+                continue
+        elif formant_.casefold() == "f3":
+            if 1700 < freqs < 3300:
+                temp_freq.append(freqs)
+                temp_time.append(time_list[i])
+                prev_freq = freqs
+                continue
+        elif formant_.casefold() == "f4":
+            if 3000 < freqs < 5000:
+                temp_freq.append(freqs)
+                temp_time.append(time_list[i])
+                prev_freq = freqs
+                continue
+
+        new_times = temp_time
+        new_freqs = temp_freq
+
+    print("current frequencies: ")
+    print(len(new_freqs))
+
     return new_times, new_freqs
 
 
@@ -386,11 +432,11 @@ if file_path:
     f4_vals_arr = [round(f4_dict[t], 0) for t in times]
 
     #Filters out all the frequency anomalies
-    times_f0, f0_vals_arr = filter_frequency_synchronized(times,  f0_vals_arr)
-    times_f1, f1_vals_arr = filter_frequency_synchronized(times, f1_vals_arr)
-    times_f2, f2_vals_arr = filter_frequency_synchronized(times, f2_vals_arr)
-    times_f3, f3_vals_arr = filter_frequency_synchronized(times, f3_vals_arr)
-    times_f4, f4_vals_arr = filter_frequency_synchronized(times, f4_vals_arr)
+    times_f0, f0_vals_arr = filter_frequency_synchronized("F0", times,  f0_vals_arr)
+    times_f1, f1_vals_arr = filter_frequency_synchronized("F1", times, f1_vals_arr)
+    times_f2, f2_vals_arr = filter_frequency_synchronized("F2", times, f2_vals_arr)
+    times_f3, f3_vals_arr = filter_frequency_synchronized("F3", times, f3_vals_arr)
+    times_f4, f4_vals_arr = filter_frequency_synchronized("F4", times, f4_vals_arr)
 
     f0_average = get_freq_average(f0_vals_arr)
     f1_average = get_freq_average(f1_vals_arr)
