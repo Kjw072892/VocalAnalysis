@@ -62,7 +62,7 @@ def output(*args: list[float], list_times:list[list[float]]):
 
 * Tongue Height (Jaw Opening):
 
-    ** F1: Cis Women [270 - 900] Hz | Cis Men [350 - 1000] Hz 
+    ** F1: Cis Women [310 - 860] Hz | Cis Men [270 - 730] Hz 
     
     - High tongue (closed mouth) -> Low F1
         + Vowels like /i/("ee" as in beet), /u/("00" in boot)
@@ -74,7 +74,7 @@ def output(*args: list[float], list_times:list[list[float]]):
 
 * Tongue Frontness:
 
-    ** F2: Cis Women [850 - 2500] Hz | Cis Men [700 - 2400] Hz
+    ** F2: Cis Women [920 - 2790] Hz | Cis Men [870 - 2290] Hz
     
     - Tongue forward -> High F2
         + Vowels like /i/("ee"), /e/("ay")
@@ -86,7 +86,7 @@ def output(*args: list[float], list_times:list[list[float]]):
 
 * Lip Shape & Resonance Characteristics:
 
-    ** F3: Cis Women [1800 - 3300] Hz | Cis Men [1600 - 3000] Hz 
+    ** F3: Cis Women [2670 - 3300] Hz | Cis Men [2240 - 3010] Hz 
      
     - Influenced by:
         + Lip rounding -> Lowers F3 (as in /r/ and /u/)
@@ -98,7 +98,7 @@ def output(*args: list[float], list_times:list[list[float]]):
 
 * Speaker & Timbre Characteristics:
 
-    ** F4: Cis Women [2500 - 4000+] Hz | Cis Men [2300 - 3700] Hz
+    ** F4: Cis Women [3300 - 4000+] Hz | Cis Men [3000 - 3700] Hz
     
     - Not directly vowel-diagnostic
     
@@ -239,16 +239,6 @@ freqs: A list of the frequencies extracted from the audio sample
 returns: tuple with the new synchronized time stamp and a list of the filtered frequencies
 """
 def filter_frequency_synchronized(formant_: str, time_list: list[float], freqs: list[float]) -> tuple[list[float], list[float]]:
-    print("Original freq: ")
-    print(len(freqs))
-    count = {}
-    for f in freqs:
-        if f in count.keys():
-            temp = count.pop(f)
-            count[f] = temp + 1
-
-        else:
-            count[f] = 1
 
     # First Filter
     new_times = []
@@ -256,13 +246,9 @@ def filter_frequency_synchronized(formant_: str, time_list: list[float], freqs: 
 
     for time, freq in zip(time_list, freqs):
 
-        if count[freq] > 1:
+        if freq > 0:
             new_times.append(time)
             new_freqs.append(freq)
-
-
-    print("Previous frequencies: ")
-    print(len(new_freqs))
 
     # Second Filter low/high pass filter
 
@@ -271,47 +257,44 @@ def filter_frequency_synchronized(formant_: str, time_list: list[float], freqs: 
     temp_freq = []
     temp_time = []
 
-    for i, freqs in enumerate(new_freqs):
+    for time, freqs in zip(new_times, new_freqs):
 
         if prev_freq == 0:
             prev_freq = freqs
             continue
         if formant_.casefold() == "f0":
-            if 82 < freqs < 335:
+            if 60 < freqs < 335:
                 temp_freq.append(freqs)
-                temp_time.append(time_list[i])
+                temp_time.append(time)
                 prev_freq = freqs
                 continue
         elif formant_.casefold() == "f1":
-            if 270 < freqs < 860:
+            if 250 <= freqs < 890:
                 temp_freq.append(freqs)
-                temp_time.append(time_list[i])
+                temp_time.append(time)
                 prev_freq = freqs
                 continue
         elif formant_.casefold() == "f2":
-            if 595 < freqs < 2400:
+            if 800 <= freqs < 2800:
                 temp_freq.append(freqs)
-                temp_time.append(time_list[i])
+                temp_time.append(time)
                 prev_freq = freqs
                 continue
         elif formant_.casefold() == "f3":
-            if 1700 < freqs < 3300:
+            if 2000 < freqs < 3400:
                 temp_freq.append(freqs)
-                temp_time.append(time_list[i])
+                temp_time.append(time)
                 prev_freq = freqs
                 continue
         elif formant_.casefold() == "f4":
-            if 3000 < freqs < 5000:
+            if 2800 < freqs < 4500:
                 temp_freq.append(freqs)
-                temp_time.append(time_list[i])
+                temp_time.append(time)
                 prev_freq = freqs
                 continue
 
-        new_times = temp_time
-        new_freqs = temp_freq
-
-    print("current frequencies: ")
-    print(len(new_freqs))
+    new_times = temp_time
+    new_freqs = temp_freq
 
     return new_times, new_freqs
 
@@ -490,8 +473,6 @@ def main():
     try:
         output(f0_vals_arr, f1_vals_arr, f2_vals_arr, f3_vals_arr, f4_vals_arr,
                list_times=[times_f0, times_f1, times_f2, times_f3, times_f4])
-
-
 
     except NameError:
         print("No File Selected")
